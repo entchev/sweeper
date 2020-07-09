@@ -1,10 +1,20 @@
-require "byebug"
+require_relative "tile.rb"
 
 class Board
+
+  attr_accessor :grid
+  
 
   def initialize
     @grid = Array.new(9) { Array.new(9, "*") }
     self.place_bombs
+    self.populate(grid)
+  end
+
+  def populate(init_grid)
+    @grid = init_grid.map do |row|
+      row.map { |value| Tile.new(value) }
+    end
   end
 
   def place_bombs
@@ -19,7 +29,6 @@ class Board
       end
   end
 
-
   def render_board
     system ("clear")
     puts "  #{(0..8).to_a.join(' ')}"
@@ -29,6 +38,16 @@ class Board
     nil
   end
 
+  def [](pos)
+    row, col = pos
+    grid[row][col]
+  end
+
+  def []=(pos, value)
+    row, col = pos
+    tile = grid[row][col]
+    tile.value = value
+  end
 
 
 end

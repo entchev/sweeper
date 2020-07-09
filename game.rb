@@ -1,14 +1,23 @@
 require_relative "board.rb"
 require_relative "tile.rb"
+require "byebug"
 
 class Sweeper
 
   def initialize 
     @board = Board.new
+    @bombed = false
+    @game_won = false
+  end
+
+  def tiles
+    puts board.grid
   end
 
   def run
-    play_turn until game_over?
+    play_turn until @bombed == true
+    board.render_board 
+    puts "Oops, you hit a bomb! Game over!"
   end
 
   def valid_selection?(selection)
@@ -43,7 +52,9 @@ class Sweeper
     self.reveal_tile if selection == 1 
   end
 
-  def game_over?
+  def game_over?(pos)
+    @bombed = true if board[pos].value == "B"
+    # @game_won = true if 
   end
 
   def place_flag
@@ -56,7 +67,7 @@ class Sweeper
       pos = parse_pos(gets.chomp)
     end
     puts "Accepted!"
-    sleep(2)
+    board[pos].flag
   end
 
   def parse_pos(string)
@@ -73,7 +84,8 @@ class Sweeper
       pos = parse_pos(gets.chomp)
     end
     puts "Accepted!"
-    sleep(2)
+    board[pos].reveal
+    self.game_over?(pos)
   end
 
   private
