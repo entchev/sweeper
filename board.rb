@@ -1,41 +1,18 @@
-require_relative "tile.rb"
+require_relative "tile"
 
 class Board
 
-  attr_accessor :grid
+  attr_reader :grid
   
-
   def initialize
-    @grid = Array.new(9) { Array.new(9, "*") }
+    @grid = Array.new(9) do |row|
+      Array.new(9) { |col| Tile.new(self, [row, col]) }
+    end
     self.place_bombs
-    self.populate(grid)
   end
 
-  def populate(init_grid)
-    @grid = init_grid.map do |row|
-      row.map { |value| Tile.new(value) }
-    end
-  end
-
-  def place_bombs
-    counter = 0 
-      @grid.each_with_index do |sub, idx1|
-          sub.each_with_index do |ele, idx2|
-            if rand(6) == 1 && counter < 10
-              @grid[idx1][idx2] = "B"
-              counter +=1
-            end 
-          end
-      end
-  end
-
-  def render_board
-    system ("clear")
-    puts "  #{(0..8).to_a.join(' ')}"
-    @grid.each_with_index do |row, i|
-      puts "#{i} #{row.join(' ')}"
-    end
-    nil
+  def reveal
+    render_board(true)
   end
 
   def [](pos)
@@ -49,5 +26,42 @@ class Board
     tile.value = value
   end
 
+  def won?
+    @grid.flatten.all? { |tile| tile.bomb != tile.revealed }
+  end
+
+  def lost?
+    @grid.flatten.any? { |tile| tile.bomb && tile.revealed }
+  end
+
+  def render_board(reveal = false)
+    temp_grid = @grid.map do |row|
+      row.map do |tile|
+        reveal ? tile.reveal : tile.render
+      end
+    end
+
+    system ("clear")
+    puts "  #{(0..8).to_a.join(' ')}"
+    temp_grid.each_with_index do |row, i|
+      puts "#{i} #{row.join(' ')}"
+    end
+    nil
+  end
+
+  def place_bombs
+    total_bombs = 0
+    while total_bombs < 10
+      rand_pos = Array.new(2) { rand(9) }
+
+      tile = self[rand_pos]
+      next if tile.bomb
+
+      tile.plant_bomb
+      total_bombs += 1
+    end
+
+    nil
+  end
 
 end
